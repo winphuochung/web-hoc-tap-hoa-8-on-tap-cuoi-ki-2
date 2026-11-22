@@ -1389,10 +1389,16 @@ function doSubmit(){
   banner.scrollIntoView({ behavior: "smooth", block: "center" });
   if (!scoreSent) {
     scoreSent = true;
-    /* CHỜ LINK WEB APP: link Apps Script của bài ôn tập này chưa có nên
-       điểm chưa gửi về Google Sheets. Khi có link, thêm fetch POST
-       tại đây (fire-and-forget, mode no-cors). Điểm cao nhất vẫn được
-       lưu trên máy của học sinh. */
+    try {
+      var secs = Math.max(0, Math.round((Date.now() - (quizStartTime || Date.now())) / 1000));
+      var dur = Math.floor(secs / 60) + " phút " + (secs % 60) + " giây";
+      var detail = QUESTIONS.map(function(item, qi){ return (qi + 1) + ": " + (answers[qi] < 0 ? "-" : LETTERS[answers[qi]]) + "/" + LETTERS[item.ans]; }).join(", ");
+      fetch("https://script.google.com/macros/s/AKfycbwvX6X7vDvw9XmU0nQL_Gv0a7rrYzrKrRs03UJCkykUC0jQL1k0nZRen8ppBeBpa_qx/exec", {method:"POST", mode:"no-cors", headers:{"Content-Type":"text/plain"}, body: JSON.stringify({name: currentStudent.name, className: currentStudent.cls, score: score, correct: score, detail: detail, duration: dur})}).catch(function(){});
+    } catch (e) {}
+  }
+  if (!scoreSent) {
+    scoreSent = true;
+    
   }
 }
 var quizModal = document.getElementById("quizModal");
